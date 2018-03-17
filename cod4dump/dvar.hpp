@@ -12,7 +12,7 @@ namespace structs {
         cheat_protected = 0x80,
     };
 
-    enum dvar_type : uint8_t
+    enum class dvar_type : uint8_t
     {
         dvar_boolean = 0,
         dvar_float,
@@ -62,19 +62,19 @@ namespace structs {
 
     struct dvar_s
     {
-        const char* name;           // 0x0
-        const char* description;    // 0x4
-        uint16_t flags;             // 0x8
-        uint8_t type;               // 0xA
-        uint8_t modified;           // 0xB
+        const char* name;              // 0x0
+        const char* description;       // 0x4
+        uint16_t flags;                // 0x8
+        dvar_type type;                // 0xA
+        uint8_t modified;              // 0xB
         dvar_value current;
         dvar_value latched;
         dvar_value default_value;
         dvar_limits limits;
-        dvar_s* prev;                 // 0x44
-        dvar_s* next;                 // 0x48
+        dvar_s* prev;                  // 0x44
+        dvar_s* next;                  // 0x48
 
-        auto toggle_flag(const dvar_flag flag) -> bool {
+        auto toggle_flag(const uint16_t flag) -> bool {
             if (this->flags & flag)
                 this->flags &= ~flag;
             else

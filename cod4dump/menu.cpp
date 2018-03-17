@@ -20,13 +20,13 @@ namespace menu {
 
         ImGui::Text("name: %s", dvar->name);
         ImGui::Text("description: %s", dvar->description);
-        ImGui::Text("type: %s", structs::dvar_types[dvar->type]);
+        ImGui::Text("type: %s", structs::dvar_types[(uint8_t)dvar->type]);
         ImGui::Text("pointer: 0x%p", dvar);
 
         ImGui::Separator();
 
         char buffer[1024];
-        ImGui::Text(((structs::print_dvar_fn)format_domains)(dvar->type, buffer, nullptr, dvar->limits.decimal.min, dvar->limits.decimal.max));
+        ImGui::Text(((structs::print_dvar_fn)format_domains)((uint16_t)dvar->type, buffer, nullptr, dvar->limits.decimal.min, dvar->limits.decimal.max));
 
         ImGui::Separator();
 
@@ -78,7 +78,7 @@ namespace menu {
         ImGui::Separator();
 
         switch(type){
-        case structs::dvar_boolean:
+        case structs::dvar_type::dvar_boolean:
             {
             ImGui::Text("values:");
 
@@ -110,7 +110,7 @@ namespace menu {
             ImGui::Columns(1);
             break;
             }
-        case structs::dvar_text:
+        case structs::dvar_type::dvar_text:
             {
             ImGui::Text("values:");
             ImGui::Separator();
@@ -120,7 +120,7 @@ namespace menu {
             ImGui::Text("default: %s", dvar->default_value.string);
             break;
             }
-        case structs::dvar_float:
+        case structs::dvar_type::dvar_float:
             {
             ImGui::SliderFloat("value", &dvar->current.flt, dvar->limits.decimal.min, dvar->limits.decimal.max);
             if (ImGui::Button("reset##float"))
@@ -130,7 +130,7 @@ namespace menu {
                 dvar->latched.flt = dvar->current.flt;
             break;
             }
-        case structs::dvar_int:
+        case structs::dvar_type::dvar_int:
         {
             ImGui::SliderInt("value", &dvar->current.integer, dvar->limits.integer.min, dvar->limits.integer.max);
             if (ImGui::Button("reset##int"))
@@ -140,7 +140,7 @@ namespace menu {
                 dvar->latched.integer = dvar->current.integer;
             break;
         }
-        case structs::dvar_color:
+        case structs::dvar_type::dvar_color:
             {
             float colorf[4] = { dvar->current.color[0] / 255.f, dvar->current.color[1] / 255.f , dvar->current.color[2] / 255.f ,dvar->current.color[3] / 255.f };
             ImGui::ColorPicker4("current", colorf, ImGuiColorEditFlags_NoPicker);
@@ -185,10 +185,9 @@ namespace menu {
                 continue;
             
             ImGui::PushID(dvar->name);
-            if(dvar->type == structs::dvar_select)
-                ImGui::Text("+ %s", dvar->name);
-            else
-                ImGui::Text(dvar->name);
+
+            ImGui::Text(dvar->name);
+
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip(dvar->description);
 
