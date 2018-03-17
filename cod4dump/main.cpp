@@ -1,5 +1,4 @@
 #include <Windows.h>
-#include <cstdio>
 #include "hooks.hpp"
 
 auto WINAPI ThreadProc(const PVOID hinstance) -> DWORD

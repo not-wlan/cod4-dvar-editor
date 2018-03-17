@@ -15,18 +15,18 @@ namespace menu {
         return initialized;
     }
 
-    auto render_cvar(dvar_s* dvar) -> void {
+    auto render_cvar(structs::dvar_s* dvar) -> void {
         const auto& type = dvar->type;
 
         ImGui::Text("name: %s", dvar->name);
         ImGui::Text("description: %s", dvar->description);
-        ImGui::Text("type: %s", dvar_types[dvar->type]);
+        ImGui::Text("type: %s", structs::dvar_types[dvar->type]);
         ImGui::Text("pointer: 0x%p", dvar);
 
         ImGui::Separator();
 
         char buffer[1024];
-        ImGui::Text(((print_dvar_fn)format_domains)(dvar->type, buffer, nullptr, dvar->limits.decimal.min, dvar->limits.decimal.max));
+        ImGui::Text(((structs::print_dvar_fn)format_domains)(dvar->type, buffer, nullptr, dvar->limits.decimal.min, dvar->limits.decimal.max));
 
         ImGui::Separator();
 
@@ -51,26 +51,26 @@ namespace menu {
          
         ImGui::Text("cheat");
         ImGui::NextColumn();
-        ImGui::Text((dvar->flags & cheat_protected) ? "true" : "false");
+        ImGui::Text((dvar->flags & structs::cheat_protected) ? "true" : "false");
         ImGui::NextColumn();
         if(ImGui::Button("toggle##cheat"))
-            dvar->toggle_flag(cheat_protected);
+            dvar->toggle_flag(structs::cheat_protected);
         ImGui::NextColumn();
 
         ImGui::Text("read only");
         ImGui::NextColumn();
-        ImGui::Text((dvar->flags & read_only) ? "true" : "false");
+        ImGui::Text((dvar->flags & structs::read_only) ? "true" : "false");
         ImGui::NextColumn();
         if (ImGui::Button("toggle##read_only"))
-            dvar->toggle_flag(read_only);
+            dvar->toggle_flag(structs::read_only);
         ImGui::NextColumn();
 
         ImGui::Text("protected");
         ImGui::NextColumn();
-        ImGui::Text((dvar->flags & write_protected) ? "true" : "false");
+        ImGui::Text((dvar->flags & structs::write_protected) ? "true" : "false");
         ImGui::NextColumn();
         if (ImGui::Button("toggle##write_protected"))
-            dvar->toggle_flag(write_protected);
+            dvar->toggle_flag(structs::write_protected);
         ImGui::NextColumn();
 
         ImGui::Columns(1);
@@ -78,7 +78,7 @@ namespace menu {
         ImGui::Separator();
 
         switch(type){
-        case dvar_boolean:
+        case structs::dvar_boolean:
             {
             ImGui::Text("values:");
 
@@ -110,7 +110,7 @@ namespace menu {
             ImGui::Columns(1);
             break;
             }
-        case dvar_text:
+        case structs::dvar_text:
             {
             ImGui::Text("values:");
             ImGui::Separator();
@@ -120,7 +120,7 @@ namespace menu {
             ImGui::Text("default: %s", dvar->default_value.string);
             break;
             }
-        case dvar_float:
+        case structs::dvar_float:
             {
             ImGui::SliderFloat("value", &dvar->current.flt, dvar->limits.decimal.min, dvar->limits.decimal.max);
             if (ImGui::Button("reset##float"))
@@ -130,7 +130,7 @@ namespace menu {
                 dvar->latched.flt = dvar->current.flt;
             break;
             }
-        case dvar_int:
+        case structs::dvar_int:
         {
             ImGui::SliderInt("value", &dvar->current.integer, dvar->limits.integer.min, dvar->limits.integer.max);
             if (ImGui::Button("reset##int"))
@@ -140,7 +140,7 @@ namespace menu {
                 dvar->latched.integer = dvar->current.integer;
             break;
         }
-        case dvar_color:
+        case structs::dvar_color:
             {
             float colorf[4] = { dvar->current.color[0] / 255.f, dvar->current.color[1] / 255.f , dvar->current.color[2] / 255.f ,dvar->current.color[3] / 255.f };
             ImGui::ColorPicker4("current", colorf, ImGuiColorEditFlags_NoPicker);
@@ -164,7 +164,7 @@ namespace menu {
         ImGui::Begin(window_title, nullptr, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
         ImGui::InputText("search", search_buffer, sizeof search_buffer);
 
-        const auto dvars = get_dvars();
+        const auto dvars = structs::get_dvars();
         const auto do_search = strlen(search_buffer) != 0;
 
         ImGui::Columns(2);
@@ -177,7 +177,7 @@ namespace menu {
         ImGui::NextColumn();
 
         // start at one because sv_cheats is twice in the array
-        for (uint32_t i = 1; i < get_dvar_count(); ++i)
+        for (uint32_t i = 1; i < structs::get_dvar_count(); ++i)
         {
             const auto dvar = dvars[i];
 
@@ -185,7 +185,7 @@ namespace menu {
                 continue;
             
             ImGui::PushID(dvar->name);
-            if(dvar->type == dvar_select)
+            if(dvar->type == structs::dvar_select)
                 ImGui::Text("+ %s", dvar->name);
             else
                 ImGui::Text(dvar->name);
@@ -219,7 +219,7 @@ namespace menu {
     auto toggle() -> void
     {
         menu_open = !menu_open;
-        static auto in_mouse = get_cvar("in_mouse");
+        static auto in_mouse = structs::get_cvar("in_mouse");
 
         if (in_mouse != nullptr)
         {
@@ -231,6 +231,21 @@ namespace menu {
             ((restart_input_fn)restart_input)();
             auto& mouse = *(uint8_t*)mouse_enabled;
             mouse = in_mouse->current.enabled;            
+        }
+    }
+
+    auto fix_mouse() -> void
+    {
+        const auto in_mouse = structs::get_cvar("in_mouse");
+        if (in_mouse != nullptr)
+        {
+            in_mouse->current.enabled = 1;
+            in_mouse->latched.enabled = 1;
+            in_mouse->modified = 0;
+
+            using restart_input_fn = void(*)();
+            ((restart_input_fn)restart_input)();
+            *(uint8_t*)mouse_enabled = 1;
         }
     }
 

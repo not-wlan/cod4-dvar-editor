@@ -32,6 +32,7 @@ namespace hooks
     {
         WNDPROC(SetWindowLongPtr(window, GWLP_WNDPROC, LONG_PTR(old_wndproc)));
         dx9_hook.unhook_all();
+        menu::fix_mouse();
     }
 
 

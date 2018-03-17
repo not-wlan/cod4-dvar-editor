@@ -8,4 +8,5 @@ namespace menu {
     auto render_menu() -> void;
     auto is_open() -> bool;
     auto toggle() -> void;
+    auto fix_mouse() -> void;
 }
